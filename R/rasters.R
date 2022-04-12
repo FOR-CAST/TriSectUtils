@@ -14,20 +14,26 @@
 #'
 #' @return `RasterLayer`
 #'
-#' @author Louis-Etienne Robert
+#' @author Louis-Etienne Robert and Alex Chubaty
 #' @export
 #' @importFrom raster extent extent<- raster
 #' @importFrom SpaDES.tools gaussMap
-createRaster <- function(rtm, gaus = TRUE, rownumb = 20, colnumb = 20,
+createRaster <- function(rtm = NULL, gaus = TRUE, rownumb = 20, colnumb = 20,
                          xmn = -10, xmx = 10, ymn = -10, ymx = 10, sc= 100, vr = 5) {
-  if (isTRUE(gaus)) {
+  if (is.null(rtm)) {
     r <- raster(nrows = rownumb, ncols = colnumb, xmn = xmn, xmx = xmx, ymn = ymn, ymx = ymx)
-    r <- abs(round(gaussMap(r, scale = sc, var = vr) ))
+    if (isTRUE(gaus)) {
+      r <- abs(round(gaussMap(r, scale = sc, var = vr)))
+    } else {
+      r[] <- 1
+    }
   } else {
-    xy <- matrix(rep(1, rownumb*colnumb), rownumb, colnumb)
-    r <- raster(xy)
-    exras <- extent(xmn, xmx, ymn, ymx)
-    extent(r) <- exras
+    r <- rtm
+    if (isTRUE(gaus)) {
+      r <- abs(round(gaussMap(r, scale = sc, var = vr)))
+    } else {
+      r[!is.na(r[])] <- 1
+    }
   }
 
   return(r)
