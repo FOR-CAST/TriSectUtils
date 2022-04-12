@@ -206,6 +206,14 @@ DispByDistance <- function(r, maxDistThreshold = 10) { # r@nrows * 1000
   return(LDDDispersed)
 }
 
+#' Short-distance dispersal
+#'
+#' @param r TODO
+#'
+#' @return TODO
+#'
+#' @export
+#' @importFrom raster focal
 DispSDD <- function(r) {
   ## establish window matrix of cellvalues=1 where the number of rows/column = 2x+1 and
   ## total amount of cells is (2x+1)^2, x=DistanceofFocalWindow
