@@ -43,7 +43,7 @@ CalcWinterMortalityAndDispersal <- function(WindowDistance, Count, SurvivingPerc
   return(CountWinterMort)
 }
 
-#' GetLDDHabitat
+#' \code{GetLDDHabitat}
 #'
 #' @param defol DESCRIPTION NEEDED
 #' @param MinLDD DESCRIPTION NEEDED
@@ -83,31 +83,21 @@ GetLDDHabitat <- function(defol, MinLDD, HalfLDD, MaxLDD) {
   return(LDDHabitat)
 }
 
-CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, PositiveRelation, Constant) {
-  # ! ----- EDIT BELOW ----- ! #
-  # THE NEXT TWO LINES ARE FOR DUMMY UNIT TESTS; CHANGE OR DELETE THEM.
-  # sim$event1Test1 <- " this is test for event 1. " # for dummy unit test
-  # sim$event1Test2 <- 999 # for dummy unit test
-
-
-  # need to create output in metadata
-  ### XXXXXXXXXX PctDefol IS INCORRECT Check pseudo code when changing biomass input
-  LDDHabitat <- apply(raster::as.matrix((PctDefol / 100)), MARGIN = c(1, 2), FUN = GetLDDHabitat)
-
-  # LDD flight computation
-
-
-  # slightly inneficient, could put the first if out of the function
-  # Default values of Max,Half,Min bind the data between 0 and 1 and use the defol value as the lddflight value
-  GetLDDFlight <- function(rZY, MaxLDDProp = MaxLDDProp, PosRel = PositiveRelation) {
-
-    # catch missing values #TODO verify consequences over whole model
-    if (is.na(rZY)) {
-      LDDFlight <- 0
-      return(LDDFlight)
-    }
-
-
+#' \code{GetLDDFlight}
+#'
+#' Default values of Max,Half,Min bind the data between 0 and 1 and use the defol value as the lddflight value
+#'
+#' @param rZY TODO
+#' @param MaxLDDProp TODO
+#' @param PosRel TODO
+#'
+#' @return TODO
+#' @export
+GetLDDFlight <- function(rZY, MaxLDDProp, PosRel) {
+  # catch missing values #TODO verify consequences over whole model
+  if (is.na(rZY)) {
+    LDDFlight <- 0
+  } else {
     slope <- (MaxLDDProp - (1 - MaxLDDProp)) / (1 - 0.46)
     intercept <- MaxLDDProp - slope
     if (PosRel) {
@@ -126,17 +116,38 @@ CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, Positive
         LDDFlight <- slope2 * rZY + intercept2
       }
     }
-
-    return(LDDFlight)
   }
 
-  # need to create output in metadata
+  return(LDDFlight)
+}
 
+#' Calculate long-distance dispersal ratio
+#'
+#' @param PctDefol TODO
+#' @param MinLDD TODO
+#' @param HalfLDD TODO
+#' @param MaxLDD TODO
+#' @param MaxLDDProp TODO
+#' @param PositiveRelation TODO
+#' @param Constant TODO
+#'
+#' @export
+#' @importFrom raster as.matrix extent raster
+CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, PositiveRelation, Constant) {
+  # ! ----- EDIT BELOW ----- ! #
+  # THE NEXT TWO LINES ARE FOR DUMMY UNIT TESTS; CHANGE OR DELETE THEM.
+  # sim$event1Test1 <- " this is test for event 1. " # for dummy unit test
+  # sim$event1Test2 <- 999 # for dummy unit test
+
+  # need to create output in metadata
+  ### XXXXXXXXXX PctDefol IS INCORRECT Check pseudo code when changing biomass input
+  LDDHabitat <- apply(raster::as.matrix((PctDefol / 100)), MARGIN = c(1, 2), FUN = GetLDDHabitat)
+
+  # LDD flight computation
   # TODO refer to recruit and defoliate for arguments
   rprimeZY <- Constant * (PctDefol / 100) + 1
-
-
-  LDDFlight <- apply(raster::as.matrix(rprimeZY), MARGIN = c(1, 2), FUN = GetLDDFlight)
+  LDDFlight <- apply(raster::as.matrix(rprimeZY), MARGIN = c(1, 2), FUN = GetLDDFlight,
+                     MaxLDDProp = MaxLDDProp, PosRel = PositiveRelation)
 
   # Calculate the LDDratio
   LDDRatio <- raster::raster(LDDHabitat * LDDFlight)
@@ -145,7 +156,7 @@ CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, Positive
   return(LDDRatio)
 }
 
-#' DispByDistance
+#' \code{DispByDistance}
 #'
 #' @param r DESCRIPTION NEEDED
 #' @param maxDistThreshold DESCRIPTION NEEDED

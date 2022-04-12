@@ -6,7 +6,7 @@ Description: More about what it does (maybe more than one line)
 URL:
   https://github.com/FOR-CAST/TriSectUtils
 Date: 2022-04-12
-Version: 0.0.1.9001
+Version: 0.0.1.9002
 Authors@R: c(
     person("Louis-Etienne", "Robert", email = "robert.louisetienne@gmail.com",
     role = c("aut", "cre")),
@@ -16,7 +16,7 @@ Authors@R: c(
     role = "cph")
     )
 Depends:
-  R (>= 3.6)
+  R (>= 4.0)
 Imports:
   data.table,
   fields,
