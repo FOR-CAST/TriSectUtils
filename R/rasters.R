@@ -16,7 +16,7 @@
 #'
 #' @author Louis-Etienne Robert and Alex Chubaty
 #' @export
-#' @importFrom raster extent extent<- raster
+#' @importFrom raster crs extent extent<- mask raster
 #' @importFrom SpaDES.tools gaussMap
 createRaster <- function(rtm = NULL, gaus = TRUE, rownumb = 20, colnumb = 20,
                          xmn = -10, xmx = 10, ymn = -10, ymx = 10, sc= 100, vr = 5) {
@@ -31,6 +31,8 @@ createRaster <- function(rtm = NULL, gaus = TRUE, rownumb = 20, colnumb = 20,
     r <- rtm
     if (isTRUE(gaus)) {
       r <- abs(round(gaussMap(r, scale = sc, var = vr)))
+      crs(r) <- crs(rtm)
+      r <- raster::mask(r, rtm)
     } else {
       r[!is.na(r[])] <- 1
     }
