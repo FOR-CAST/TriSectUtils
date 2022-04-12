@@ -141,7 +141,8 @@ CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, Positive
 
   # need to create output in metadata
   ### XXXXXXXXXX PctDefol IS INCORRECT Check pseudo code when changing biomass input
-  LDDHabitat <- apply(raster::as.matrix((PctDefol / 100)), MARGIN = c(1, 2), FUN = GetLDDHabitat)
+  LDDHabitat <- apply(raster::as.matrix((PctDefol / 100)), MARGIN = c(1, 2), FUN = GetLDDHabitat,
+                      MinLDD = MinLDD, HalfLDD = HalfLDD, MaxLDD = MaxLDD)
 
   # LDD flight computation
   # TODO refer to recruit and defoliate for arguments

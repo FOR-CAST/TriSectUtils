@@ -6,7 +6,7 @@ Description: More about what it does (maybe more than one line)
 URL:
   https://github.com/FOR-CAST/TriSectUtils
 Date: 2022-04-12
-Version: 0.0.1.9002
+Version: 0.0.1.9003
 Authors@R: c(
     person("Louis-Etienne", "Robert", email = "robert.louisetienne@gmail.com",
     role = c("aut", "cre")),
