@@ -17,7 +17,7 @@ globalVariables(c(
 #' @author Louis-Etienne Robert
 #' @export
 #' @importFrom raster focal
-CalcWinterMortalityAndDispersal <- function(WindowDistance, Count, SurvivingPercent,LDisperse) {
+CalcWinterMortalityAndDispersal <- function(WindowDistance, Count, SurvivingPercent, LDisperse) {
   #Debug
   #a<<-Count
   #b<<-SurvivingPercent
@@ -168,24 +168,36 @@ CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, Positive
 #' @importFrom data.table data.table uniqueN
 #' @importFrom fields fields.rdist.near
 #' @importFrom raster rasterFromXYZ rasterToPoints
+#' @importFrom SpaDES.tools distanceFromEachPoint
+#' @importFrom stats aggregate
 DispByDistance <- function(r, maxDistThreshold = 10) { # r@nrows * 1000
   ## 1. transform to points
-  r2 <- rasterToPoints(r) # can use function argument to subset raster example: dont use 0
+  r2 <- rasterToPoints(r) # can use function argument to subset raster example: don't use 0
 
   ## 2. calculate distance using a max threshold distance (delta)
+  ## TODO: this is doing Euclidean distance (i.e. cell units); needs to be great circle distance and in e.g., m
+  ## TODO: parallelize this!!!
   distance <- fields.rdist.near(r2[, 1:2], r2[, 1:2], delta = maxDistThreshold, max.points = nrow(r2) * 1000)
 
   ## 3. convert distance to probabilities
 
   # calculate the probability of dispersal to the "to" cell as function of distance (normalized inversed probability)
   dist.invers <- cbind(distance[[1]], 1 / distance[[2]])
-  dist.invers[dist.invers[, 3] == Inf, 3] <- 0 # correction for distance = 0
+  dist.invers[is.infinite(dist.invers[, 3]), 3] <- 0
+  colnames(dist.invers) <- c("from", "to", "prob")
 
   a <- stats::aggregate(dist.invers[, 3], by = list(dist.invers[, 1]), FUN = sum) # get the sum of distance by "from" cell
+
+  ## ALT: way
+  a <- distanceFromEachPoint(r2[, c("x", "y")], to = NULL, landscape = r,
+                             distFn = function(dist) ifelse(dist == 0, 0, 1 / dist), ## default
+                             cumulativeFn = `+`,
+                             cl = pemisc::optimalClusterNum())
+
   # introduce in the data frame
   b <- merge(dist.invers, a, by = 1)
   c <- merge(b, r2[, 3], by.x = 1, by.y = 0)
-  t.data <- cbind(distance[[1]], c[, 3] / c[, 4], c[, 5])
+  t.data <- cbind(distance[[1]], c[, 3] / c[, 4], c[, 5]) ## TODO: add col names to help explain what is going on
 
   ## 4. convert to data.table
   t.data <- data.table(t.data)

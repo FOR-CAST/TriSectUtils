@@ -20,12 +20,15 @@ Depends:
 Imports:
   data.table,
   fields,
-  RandomFields,
+  pemisc,
   raster,
   SpaDES.tools,
   stats
 Suggests:
   roxygen2
+Remotes:
+  PredictiveEcology/pemisc@development,
+  PredictiveEcology/SpaDES.tools@development
 Encoding: UTF-8
 Language: en-CA
 License: GPL-2
@@ -33,4 +36,4 @@ BugReports: https://github.com/FOR-CAST/TriSectUtils/issues
 ByteCompile: yes
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.2
