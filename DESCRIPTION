@@ -6,12 +6,12 @@ Description: More about what it does (maybe more than one line)
 URL:
   https://github.com/FOR-CAST/TriSectUtils
 Date: 2022-04-12
-Version: 0.0.1.9004
+Version: 0.0.1.9005
 Authors@R: c(
     person("Louis-Etienne", "Robert", email = "robert.louisetienne@gmail.com",
-    role = c("aut", "cre")),
+    role = c("aut")),
     person("Alex M", "Chubaty", email = "achubaty@for-cast.ca",
-    role = c("ctb"), comment = c(ORCID = "0000-0001-7146-8135")),
+    role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7146-8135")),
     person("Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada",
     role = "cph")
     )
