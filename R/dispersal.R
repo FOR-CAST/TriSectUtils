@@ -17,7 +17,7 @@ globalVariables(c(
 #' @author Louis-Etienne Robert
 #' @export
 #' @importFrom raster focal
-CalcWinterMortalityAndDispersal <- function(WindowDistance, Count, SurvivingPercent,LDisperse) {
+CalcWinterMortalityAndDispersal <- function(WindowDistance, Count, SurvivingPercent, LDisperse) {
   #Debug
   #a<<-Count
   #b<<-SurvivingPercent
@@ -43,7 +43,7 @@ CalcWinterMortalityAndDispersal <- function(WindowDistance, Count, SurvivingPerc
   return(CountWinterMort)
 }
 
-#' GetLDDHabitat
+#' \code{GetLDDHabitat}
 #'
 #' @param defol DESCRIPTION NEEDED
 #' @param MinLDD DESCRIPTION NEEDED
@@ -83,31 +83,21 @@ GetLDDHabitat <- function(defol, MinLDD, HalfLDD, MaxLDD) {
   return(LDDHabitat)
 }
 
-CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, PositiveRelation, Constant) {
-  # ! ----- EDIT BELOW ----- ! #
-  # THE NEXT TWO LINES ARE FOR DUMMY UNIT TESTS; CHANGE OR DELETE THEM.
-  # sim$event1Test1 <- " this is test for event 1. " # for dummy unit test
-  # sim$event1Test2 <- 999 # for dummy unit test
-
-
-  # need to create output in metadata
-  ### XXXXXXXXXX PctDefol IS INCORRECT Check pseudo code when changing biomass input
-  LDDHabitat <- apply(raster::as.matrix((PctDefol / 100)), MARGIN = c(1, 2), FUN = GetLDDHabitat)
-
-  # LDD flight computation
-
-
-  # slightly inneficient, could put the first if out of the function
-  # Default values of Max,Half,Min bind the data between 0 and 1 and use the defol value as the lddflight value
-  GetLDDFlight <- function(rZY, MaxLDDProp = MaxLDDProp, PosRel = PositiveRelation) {
-
-    # catch missing values #TODO verify consequences over whole model
-    if (is.na(rZY)) {
-      LDDFlight <- 0
-      return(LDDFlight)
-    }
-
-
+#' \code{GetLDDFlight}
+#'
+#' Default values of Max,Half,Min bind the data between 0 and 1 and use the defol value as the lddflight value
+#'
+#' @param rZY TODO
+#' @param MaxLDDProp TODO
+#' @param PosRel TODO
+#'
+#' @return TODO
+#' @export
+GetLDDFlight <- function(rZY, MaxLDDProp, PosRel) {
+  # catch missing values #TODO verify consequences over whole model
+  if (is.na(rZY)) {
+    LDDFlight <- 0
+  } else {
     slope <- (MaxLDDProp - (1 - MaxLDDProp)) / (1 - 0.46)
     intercept <- MaxLDDProp - slope
     if (PosRel) {
@@ -126,17 +116,39 @@ CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, Positive
         LDDFlight <- slope2 * rZY + intercept2
       }
     }
-
-    return(LDDFlight)
   }
 
-  # need to create output in metadata
+  return(LDDFlight)
+}
 
+#' Calculate long-distance dispersal ratio
+#'
+#' @param PctDefol TODO
+#' @param MinLDD TODO
+#' @param HalfLDD TODO
+#' @param MaxLDD TODO
+#' @param MaxLDDProp TODO
+#' @param PositiveRelation TODO
+#' @param Constant TODO
+#'
+#' @export
+#' @importFrom raster as.matrix extent raster
+CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, PositiveRelation, Constant) {
+  # ! ----- EDIT BELOW ----- ! #
+  # THE NEXT TWO LINES ARE FOR DUMMY UNIT TESTS; CHANGE OR DELETE THEM.
+  # sim$event1Test1 <- " this is test for event 1. " # for dummy unit test
+  # sim$event1Test2 <- 999 # for dummy unit test
+
+  # need to create output in metadata
+  ### XXXXXXXXXX PctDefol IS INCORRECT Check pseudo code when changing biomass input
+  LDDHabitat <- apply(raster::as.matrix((PctDefol / 100)), MARGIN = c(1, 2), FUN = GetLDDHabitat,
+                      MinLDD = MinLDD, HalfLDD = HalfLDD, MaxLDD = MaxLDD)
+
+  # LDD flight computation
   # TODO refer to recruit and defoliate for arguments
   rprimeZY <- Constant * (PctDefol / 100) + 1
-
-
-  LDDFlight <- apply(raster::as.matrix(rprimeZY), MARGIN = c(1, 2), FUN = GetLDDFlight)
+  LDDFlight <- apply(raster::as.matrix(rprimeZY), MARGIN = c(1, 2), FUN = GetLDDFlight,
+                     MaxLDDProp = MaxLDDProp, PosRel = PositiveRelation)
 
   # Calculate the LDDratio
   LDDRatio <- raster::raster(LDDHabitat * LDDFlight)
@@ -145,7 +157,7 @@ CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, Positive
   return(LDDRatio)
 }
 
-#' DispByDistance
+#' \code{DispByDistance}
 #'
 #' @param r DESCRIPTION NEEDED
 #' @param maxDistThreshold DESCRIPTION NEEDED
@@ -156,24 +168,36 @@ CalcLDDRatio <- function(PctDefol, MinLDD, HalfLDD, MaxLDD, MaxLDDProp, Positive
 #' @importFrom data.table data.table uniqueN
 #' @importFrom fields fields.rdist.near
 #' @importFrom raster rasterFromXYZ rasterToPoints
+#' @importFrom SpaDES.tools distanceFromEachPoint
+#' @importFrom stats aggregate
 DispByDistance <- function(r, maxDistThreshold = 10) { # r@nrows * 1000
   ## 1. transform to points
-  r2 <- rasterToPoints(r) # can use function argument to subset raster example: dont use 0
+  r2 <- rasterToPoints(r) # can use function argument to subset raster example: don't use 0
 
   ## 2. calculate distance using a max threshold distance (delta)
+  ## TODO: this is doing Euclidean distance (i.e. cell units); needs to be great circle distance and in e.g., m
+  ## TODO: parallelize this!!!
   distance <- fields.rdist.near(r2[, 1:2], r2[, 1:2], delta = maxDistThreshold, max.points = nrow(r2) * 1000)
 
   ## 3. convert distance to probabilities
 
   # calculate the probability of dispersal to the "to" cell as function of distance (normalized inversed probability)
   dist.invers <- cbind(distance[[1]], 1 / distance[[2]])
-  dist.invers[dist.invers[, 3] == Inf, 3] <- 0 # correction for distance = 0
+  dist.invers[is.infinite(dist.invers[, 3]), 3] <- 0
+  colnames(dist.invers) <- c("from", "to", "prob")
 
   a <- stats::aggregate(dist.invers[, 3], by = list(dist.invers[, 1]), FUN = sum) # get the sum of distance by "from" cell
+
+  ## ALT: way
+  a <- distanceFromEachPoint(r2[, c("x", "y")], to = NULL, landscape = r,
+                             distFn = function(dist) ifelse(dist == 0, 0, 1 / dist), ## default
+                             cumulativeFn = `+`,
+                             cl = pemisc::optimalClusterNum())
+
   # introduce in the data frame
   b <- merge(dist.invers, a, by = 1)
   c <- merge(b, r2[, 3], by.x = 1, by.y = 0)
-  t.data <- cbind(distance[[1]], c[, 3] / c[, 4], c[, 5])
+  t.data <- cbind(distance[[1]], c[, 3] / c[, 4], c[, 5]) ## TODO: add col names to help explain what is going on
 
   ## 4. convert to data.table
   t.data <- data.table(t.data)
@@ -194,6 +218,14 @@ DispByDistance <- function(r, maxDistThreshold = 10) { # r@nrows * 1000
   return(LDDDispersed)
 }
 
+#' Short-distance dispersal
+#'
+#' @param r TODO
+#'
+#' @return TODO
+#'
+#' @export
+#' @importFrom raster focal
 DispSDD <- function(r) {
   ## establish window matrix of cellvalues=1 where the number of rows/column = 2x+1 and
   ## total amount of cells is (2x+1)^2, x=DistanceofFocalWindow

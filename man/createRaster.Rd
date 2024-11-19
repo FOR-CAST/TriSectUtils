@@ -5,7 +5,7 @@
 \title{Create dummy rasters based on raster to match}
 \usage{
 createRaster(
-  rtm,
+  rtm = NULL,
   gaus = TRUE,
   rownumb = 20,
   colnumb = 20,
@@ -46,5 +46,5 @@ If \code{FALSE}, creates a raster with all pixel values equal to \code{1}.}
 Create dummy rasters based on raster to match
 }
 \author{
-Louis-Etienne Robert
+Louis-Etienne Robert and Alex Chubaty
 }

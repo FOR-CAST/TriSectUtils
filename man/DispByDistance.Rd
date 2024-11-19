@@ -2,7 +2,7 @@
 % Please edit documentation in R/dispersal.R
 \name{DispByDistance}
 \alias{DispByDistance}
-\title{DispByDistance}
+\title{\code{DispByDistance}}
 \usage{
 DispByDistance(r, maxDistThreshold = 10)
 }
@@ -15,5 +15,5 @@ DispByDistance(r, maxDistThreshold = 10)
 DESCRIPTION NEEDED
 }
 \description{
-DispByDistance
+\code{DispByDistance}
 }

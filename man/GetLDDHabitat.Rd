@@ -2,7 +2,7 @@
 % Please edit documentation in R/dispersal.R
 \name{GetLDDHabitat}
 \alias{GetLDDHabitat}
-\title{GetLDDHabitat}
+\title{\code{GetLDDHabitat}}
 \usage{
 GetLDDHabitat(defol, MinLDD, HalfLDD, MaxLDD)
 }
@@ -19,5 +19,5 @@ GetLDDHabitat(defol, MinLDD, HalfLDD, MaxLDD)
 DESCRIPTION NEEDED
 }
 \description{
-GetLDDHabitat
+\code{GetLDDHabitat}
 }
